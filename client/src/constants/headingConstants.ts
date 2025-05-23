@@ -1,1 +1,0 @@
-export const HEADING_HEIGHT = 67;

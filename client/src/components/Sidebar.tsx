@@ -17,19 +17,17 @@ import book3 from "@/assets/book3.png";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import {
-  ADMIN_SIDE_BAR_LIST_ONE,
-  ADMIN_SIDE_BAR_LIST_TWO,
   DRAWER_WIDTH,
   OWNER_SIDE_BAR_LIST_ONE,
   OWNER_SIDE_BAR_LIST_TWO,
-} from "@/constants/DrawerConstansts";
+} from "@/constants";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router";
 import useLogOut from "../hooks/useLogOut";
 import useAuth from "@/hooks/useAuth";
 
 type SidebarProps = {
-  list1: typeof ADMIN_SIDE_BAR_LIST_ONE | typeof OWNER_SIDE_BAR_LIST_ONE;
-  list2: typeof ADMIN_SIDE_BAR_LIST_TWO | typeof OWNER_SIDE_BAR_LIST_TWO;
+  list1: typeof OWNER_SIDE_BAR_LIST_ONE;
+  list2: typeof OWNER_SIDE_BAR_LIST_TWO;
 };
 
 export default function Sidebar({ list1, list2 }: SidebarProps) {
@@ -114,13 +112,8 @@ export default function Sidebar({ list1, list2 }: SidebarProps) {
           {list2.map((list) => (
             <ListItem key={list.text} disablePadding>
               <ListItemButton
-                // component={RouterLink} to={list.to}
-                //  state={{role: list?.role}}
-                onClick={() =>
-                  list.to === "/sign-in"
-                    ? handleLogout()
-                    : navigate(list.to)
-                }
+                component={RouterLink}
+                to={list.to}
                 sx={{
                   bgcolor:
                     location.pathname === list.to ? "primary.main" : "inherit",

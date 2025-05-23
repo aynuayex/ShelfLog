@@ -1,5 +1,5 @@
-import { DRAWER_WIDTH } from "@/constants/DrawerConstansts";
-import { HEADING_HEIGHT } from "@/constants/headingConstants";
+import { DRAWER_WIDTH } from "@/constants";
+import { HEADING_HEIGHT } from "@/constants/index";
 import {
   Box,
   Typography,
@@ -7,9 +7,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  // DialogTitle,
   TextField,
-  // MenuItem,
   Snackbar,
   Alert,
 } from "@mui/material";
@@ -25,7 +23,6 @@ const initialFormData = {
 };
 
 const BookUpload = () => {
-  // const [openFormDialog, setOpenFormDialog] = useState(false);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [message, setMessage] = useState("");
   const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
@@ -59,7 +56,6 @@ const BookUpload = () => {
           author: "",
           category: "",
         });
-        
       }
       console.log(response);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -259,7 +255,7 @@ const BookUpload = () => {
       <TextField
         autoFocus
         required
-        // margin="dense"
+        margin="dense"
         name="title"
         value={formData.title}
         onChange={handleInputChange}

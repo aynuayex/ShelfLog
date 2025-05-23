@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const orderSchema = z.object({
+export const bookSchema = z.object({
     toppings: z.array(
         z.object({
           name: z.string(),
@@ -15,4 +15,4 @@ export const orderSchema = z.object({
     // olives: z.boolean(),
 })
 
-export type OrderSchema = z.infer<typeof orderSchema>;
+export type BookSchema = z.infer<typeof bookSchema>;

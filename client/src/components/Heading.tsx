@@ -1,13 +1,9 @@
 import { Box, Typography } from "@mui/material";
 import { useLocation } from "react-router";
-import {
-  OWNER_SIDE_BAR_LIST_ONE,
-  OWNER_SIDE_BAR_LIST_TWO,
-} from "@/constants/DrawerConstansts";
-import { HEADING_HEIGHT } from "@/constants/headingConstants";
+import { OWNER_SIDE_BAR_LIST_ONE, OWNER_SIDE_BAR_LIST_TWO } from "@/constants";
+import { HEADING_HEIGHT } from "@/constants/index";
 
 type HeadingProps = {
-  // TODO: check the below type definition correctness
   lists: typeof OWNER_SIDE_BAR_LIST_TWO & typeof OWNER_SIDE_BAR_LIST_ONE;
 };
 const Heading = ({ lists }: HeadingProps) => {

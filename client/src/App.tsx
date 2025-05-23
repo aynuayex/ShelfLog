@@ -1,11 +1,10 @@
 import { Outlet } from "react-router";
 import { Box } from "@mui/material";
-// import './App.css'
 import {
   DRAWER_WIDTH,
   OWNER_SIDE_BAR_LIST_ONE,
   OWNER_SIDE_BAR_LIST_TWO,
-} from "@/constants/DrawerConstansts";
+} from "@/constants";
 import Heading from "@/components/Heading";
 import Sidebar from "@/components/Sidebar";
 
@@ -20,13 +19,13 @@ function App() {
         gap: 2,
       }}
     >
-          <Sidebar
-            list1={OWNER_SIDE_BAR_LIST_ONE}
-            list2={OWNER_SIDE_BAR_LIST_TWO}
-          />
-          <Heading
-            lists={[...OWNER_SIDE_BAR_LIST_ONE, ...OWNER_SIDE_BAR_LIST_TWO]}
-          />
+      <Sidebar
+        list1={OWNER_SIDE_BAR_LIST_ONE}
+        list2={OWNER_SIDE_BAR_LIST_TWO}
+      />
+      <Heading
+        lists={[...OWNER_SIDE_BAR_LIST_ONE, ...OWNER_SIDE_BAR_LIST_TWO]}
+      />
       <Box>
         <Outlet />
       </Box>

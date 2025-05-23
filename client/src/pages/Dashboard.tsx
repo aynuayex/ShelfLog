@@ -71,7 +71,7 @@ const Dashboard = () => {
   const handleBookStatusChange = useCallback(
     async (event: SelectChangeEvent, id: string) => {
       try {
-        const response = await axiosPrivate.patch(`books/${id}`, {
+        const response = await axiosPrivate.put(`books/${id}`, {
           status: event.target.value,
         });
         console.log({ response });
@@ -224,35 +224,6 @@ const Dashboard = () => {
         </IconButton>
       </Box>
     ),
-    // renderTopToolbarCustomActions: () => (
-    //   <Box sx={{ width: '100%' }}>
-    //     <Box
-    //       sx={{
-    //         textAlign: 'center',
-    //         fontWeight: 'bold',
-    //         fontSize: '1.2rem',
-    //       }}
-    //     >
-    //       {title}
-    //     </Box>
-    //     <Box sx={{ display: 'flex', gap: { xs: 0, sm: 2 } }}>
-    //       <Button
-    //         onClick={handleExportCsv}
-    //         startIcon={<FileDownloadIcon />}
-    //         variant={matches ? 'text' : 'contained'}
-    //       >
-    //         {matches ? 'CSV' : 'Download CSV'}
-    //       </Button>
-    //       <Button
-    //         onClick={handleExportPdf}
-    //         startIcon={<FileDownloadIcon />}
-    //         variant={matches ? 'text' : 'contained'}
-    //       >
-    //         {matches ? 'PDF' : 'Download PDF'}
-    //       </Button>
-    //     </Box>
-    //   </Box>
-    // ),
     state: {
       //   isLoading,
     },
