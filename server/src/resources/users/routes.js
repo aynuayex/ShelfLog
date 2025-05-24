@@ -11,10 +11,10 @@ const {
 } = require("./controllers/index");
 
 router.post("/register", 
-  // validateUser, 
+  validateUser, 
   registerController.handleNewUser);
 router.post("/login",  
-  // validateUser, 
+  validateUser, 
   loginController.handleLogin);
 router.get("/logout", logoutController.handleLogout);
 router.get("/refresh", refreshController.handleRefreshToken);

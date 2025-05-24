@@ -7,7 +7,7 @@ const BookSchema = new mongoose.Schema(
       required: true,
       ref: "User",
     },
-    title: { type: String, required: true },
+    title: { type: String, required: true, unique: true },
     author: { type: String, required: true },
     category: { type: String, required: true },
     note: { type: String, default: "" },

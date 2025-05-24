@@ -1,290 +1,137 @@
-import { DRAWER_WIDTH } from "@/constants";
-import { HEADING_HEIGHT } from "@/constants/index";
+import toast from "react-hot-toast";
 import {
   Box,
   Typography,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
   TextField,
-  Snackbar,
-  Alert,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import FileUploadOutlinedIcon from "@mui/icons-material/FileUploadOutlined";
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
-import smile from "@/assets/smile.png";
+import { useRef } from "react";
 
-const initialFormData = {
-  title: "",
-  author: "",
-  category: "",
-};
+import { DRAWER_WIDTH } from "@/constants";
+import { HEADING_HEIGHT } from "@/constants/index";
+import { UseCreateBook } from "@/api/ticket/Queries";
+import { bookSchema, type BookSchema } from "@/schema/bookSchema";
 
 const BookUpload = () => {
-  const [openSnackBar, setOpenSnackBar] = useState(false);
-  const [message, setMessage] = useState("");
-  const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
-  const [formData, setFormdata] = useState(initialFormData);
-  const axiosPrivate = useAxiosPrivate();
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormdata((prevFormData) => ({ ...prevFormData, [name]: value }));
+  const { isSuccess, isError, mutate: createBook } = UseCreateBook();
+
+  const {
+    handleSubmit,
+    formState: { isSubmitting, errors },
+    control,
+    reset,
+  } = useForm<BookSchema>({
+    resolver: zodResolver(bookSchema),
+    defaultValues: {
+      title: "",
+      author: "",
+      category: "",
+    },
+  });
+
+  const onSubmit: SubmitHandler<BookSchema> = async (data) => {
+    createBook(data);
+    reset({ title: "", author: "", category: "" });
+    setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 10);
+    console.log({ isSuccess, isError });
   };
 
-  const handleClose = (e?: React.SyntheticEvent | Event, reason?: string) => {
-    console.log(e);
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackBar(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      console.log(formData);
-      const response = await axiosPrivate.post("books", {
-        ...formData,
-      });
-      if (response.status === 201) {
-        setOpenSuccessDialog(true);
-        setFormdata({
-          title: "",
-          author: "",
-          category: "",
-        });
-      }
-      console.log(response);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error(err);
-      if (err?.response?.status === 409) {
-        setOpenSnackBar(true);
-        setMessage(
-          "The book already exists, please edit on the dashboard or create a new one!"
-        );
-      }
-    }
-  };
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
     <Box
       component="form"
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
       sx={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         gap: 4,
-        width: `calc(100vw - ${DRAWER_WIDTH + 48}px)`,
-        height: `calc(100vh - ${HEADING_HEIGHT + 48}px)`,
+        width: isMobile ? "100%" : `calc(100vw - ${DRAWER_WIDTH + 48}px)`,
+        height: isMobile ? "auto" : `calc(100vh - ${HEADING_HEIGHT + 48}px)`,
         borderRadius: 1,
         bgcolor: "white",
-        boxShadow: "0 8px 24px 0 rgba(69, 69, 80, 0.1)",
+        boxShadow: isMobile ? undefined : "0 8px 24px 0 rgba(69, 69, 80, 0.1)",
+        p: isMobile ? 2 : 0,
+        m: isMobile ? 0 : undefined,
       }}
     >
-      <Snackbar
-        autoHideDuration={8000}
-        open={openSnackBar}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
+      <Typography
+        mt={isMobile ? 2 : 4}
+        gutterBottom
+        fontSize={isMobile ? 20 : undefined}
       >
-        <Alert severity="error" variant="filled" onClose={handleClose}>
-          {message}
-        </Alert>
-      </Snackbar>
-
-      <Dialog
-        PaperProps={{
-          sx: {
-            borderRadius: 6,
-          },
-        }}
-        open={openSuccessDialog}
-        onClose={() => setOpenSuccessDialog(false)}
-      >
-        <DialogContent>
-          <Box
-            sx={{
-              width: 300,
-              fontsize: "30px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <img
-                src={smile}
-                alt="success smile image"
-                width={50}
-                height={50}
-              />
-            </Box>
-            <Typography
-              gutterBottom
-              sx={{
-                color: "black",
-                fontSize: "18px",
-                fontWeight: 600,
-                lineHeight: "21.78px",
-              }}
-            >
-              Congrats!
-            </Typography>
-            <Typography
-              sx={{
-                color: "black",
-                opacity: 0.5,
-                fontSize: "12px",
-                fontWeight: 400,
-                lineHeight: "14.52px",
-              }}
-            >
-              You have uploaded the book successfully.
-            </Typography>
-          </Box>
-        </DialogContent>
-        <DialogActions
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Button
-            sx={{ width: "100px", bgcolor: "primary.light", mb: 2 }}
-            autoFocus
-            onClick={() => setOpenSuccessDialog(false)}
-            variant="contained"
-          >
-            Ok
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Typography mt={4} gutterBottom>
         Upload New Book
       </Typography>
-      {/* <Button variant="contained" onClick={() => setOpenFormDialog(true)}>
-        Add Book Description
-      </Button> */}
-      {/* <Dialog
-        open={openFormDialog}
-        onClose={() => setOpenFormDialog(false)}
-        aria-labelledby="dialog-title"
-      >
-        <DialogTitle id="dialog-title" textAlign={"center"}>
-          Add Book
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            required
-            margin="dense"
-            name="title"
-            value={formData.book}
-            onChange={handleInputChange}
-            label="Book Name"
-            fullWidth
-            variant="filled"
-          />
-          <TextField
-            required
-            margin="dense"
-            name="author"
-            value={formData.author}
-            onChange={handleInputChange}
-            label="Author Name"
-            fullWidth
-            variant="filled"
-          />
-          <TextField
-            required
-            margin="dense"
-            name="category"
-            value={formData.category}
-            onChange={handleInputChange}
-            label="category"
-            fullWidth
-            variant="filled"
-          />
-          <TextField
-            select
-            required
-            margin="dense"
-            name="category"
-            value={formData.category}
-            onChange={handleInputChange}
-            label="Category"
-            fullWidth
-            variant="filled"
-          >
-            <MenuItem value="FICTION">Fiction</MenuItem>
-            <MenuItem value="SELF_HELP">Self Help</MenuItem>
-            <MenuItem value="BUSINESS">Business</MenuItem>
-          </TextField>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="contained"
-            fullWidth
-            autoFocus
-            sx={{ textTransform: "none", m: 2, bgcolor: "primary.light" }}
-            onClick={() => setOpenFormDialog(false)}
-          >
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog> */}
 
-      <TextField
-        autoFocus
-        required
-        margin="dense"
+      <Controller
         name="title"
-        value={formData.title}
-        onChange={handleInputChange}
-        label="Book Name"
-        variant="filled"
-        sx={{ width: 2 / 5 }}
+        control={control}
+        render={({ field }) => (
+          <TextField
+            inputRef={titleInputRef}
+            autoFocus
+            {...field}
+            required
+            margin="dense"
+                sx={{ width: {xs: 5/6, sm: 3/4 }}}
+            label="Book Name"
+            variant="filled"
+            disabled={isSubmitting}
+            error={!!errors.title}
+            helperText={errors.title?.message}
+          />
+        )}
       />
-      <TextField
-        required
-        margin="dense"
+
+      <Controller
         name="author"
-        value={formData.author}
-        onChange={handleInputChange}
-        label="Author Name"
-        variant="filled"
-        sx={{ width: 2 / 5 }}
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            required
+            margin="dense"
+                sx={{ width: {xs: 5/6, sm: 3/4 }}}
+            label="Author Name"
+            variant="filled"
+            disabled={isSubmitting}
+            error={!!errors.author}
+            helperText={errors.author?.message}
+          />
+        )}
       />
-      <TextField
-        required
-        margin="dense"
+
+      <Controller
         name="category"
-        value={formData.category}
-        onChange={handleInputChange}
-        label="Category"
-        variant="filled"
-        sx={{ width: 2 / 5 }}
+        control={control}
+        render={({ field }) => (
+          <TextField
+            {...field}
+            required
+            margin="dense"
+                sx={{ width: {xs: 5/6, sm: 3/4 }}}
+            label="Category"
+            variant="filled"
+            disabled={isSubmitting}
+            error={!!errors.category}
+            helperText={errors.category?.message}
+          />
+        )}
       />
 
       <Button
+        onClick={() => toast.error("Not implemented yet!")}
         startIcon={<FileUploadOutlinedIcon />}
         sx={{ textTransform: "none", color: "primary.light" }}
       >
@@ -294,7 +141,7 @@ const BookUpload = () => {
         variant="contained"
         type="submit"
         sx={{
-          width: "300px",
+          width: {xs: "200px", sm: "300px"},
           height: "60px",
           borderRadius: 6,
           textTransform: "none",

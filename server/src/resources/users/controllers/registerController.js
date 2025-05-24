@@ -59,7 +59,6 @@ const handleNewUser = async (req, res) => {
       id: result._id,
       fullName,
       email,
-      role: result.role,
       accessToken,
       emailVerified: result.emailVerified
     });

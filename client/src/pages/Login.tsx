@@ -22,15 +22,14 @@ import { useEffect, useState } from "react";
 
 import book1 from "../assets/book1.png";
 import book2 from "../assets/book2.png";
-import { Link as RouterLink, useLocation, 
-  useNavigate
- } from "react-router";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router";
 import axios from "@/api/axios";
 import useAuth from "@/hooks/useAuth";
 import { LoadingButton } from "@mui/lab";
 import { Controller, useForm, type SubmitHandler } from "react-hook-form";
 import { loginSchema, type LoginSchema } from "@/schema/loginSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import toast from "react-hot-toast";
 
 function Login() {
   const [open, setOpen] = useState(false);
@@ -63,11 +62,6 @@ function Login() {
     },
   });
 
-  // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target;
-  //   setFormdata((prevFormData) => ({ ...prevFormData, [name]: value }));
-  // };
-
   const handleClose = (e?: React.SyntheticEvent | Event, reason?: string) => {
     console.log(e);
     if (reason === "clickaway") {
@@ -87,14 +81,13 @@ function Login() {
           id,
           email,
           fullName,
-          // success,
           accessToken,
+          emailVerified,
         } = response.data;
-        setAuth({ id, email, fullName, accessToken });
+        setAuth({ id, email, fullName, accessToken, emailVerified });
         console.log(response.data);
 
         navigate("/dashboard");
-        // navigate(from === "/dashboard"? "/dashboard/layout/order": from, { state: { message: success, pizza }, replace: true });
       }
       console.log(response);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -107,7 +100,12 @@ function Login() {
       } else if (err.response?.status === 401) {
         setErrMsg("Unauthorized, Your Email and/or Password is not correct!");
       } else if (err.response?.status === 403) {
-        setErrMsg("Forbidden,Your account is not approved by Admin!");
+        const { id, email, fullName, role, accessToken, emailVerified } =
+          err.response.data;
+        console.log({ id, email, fullName, role, accessToken, emailVerified });
+        setAuth({ id, email, fullName, accessToken, emailVerified });
+        toast.error("Forbidden,You need to verify your email before you LogIn!");
+        navigate("/verify-email");
       } else {
         setErrMsg("Login Failed, Please Try again later!");
       }
@@ -145,7 +143,7 @@ function Login() {
         <Box
           sx={{
             width: "50%",
-            display: "flex",
+            display: { xs: "none", md: "flex" },
             justifyContent: "center",
             alignItems: "center",
             bgcolor: "#171B36",
@@ -158,13 +156,15 @@ function Login() {
           component="form"
           onSubmit={handleSubmit(onSubmit)}
           sx={{
-            width: "50%",
+            width: { xs: "100%", md: "50%" },
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             gap: 2,
             bgcolor: "white",
-            p: 8,
+            px: {xs: 3, md: 8},
+            pb: {xs: 3, md: 8},
+            pt: {xs: 0, md: 8}
           }}
         >
           <Stack direction={"row"} spacing={2}>

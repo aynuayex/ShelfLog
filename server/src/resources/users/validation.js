@@ -18,11 +18,13 @@ const newUserSchema = Joi.object({
   confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
     "any.only": "Passwords do not match",
   }),
+  termsAndConditions: Joi.boolean().required(),
 });
 
 const loginUserSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
+  persist: Joi.boolean().required(),
 });
 
 module.exports = { newUserSchema, loginUserSchema };

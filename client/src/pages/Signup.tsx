@@ -2,11 +2,7 @@ import {
   Alert,
   Box,
   Link,
-  // Button,
-  // Dialog,
   Checkbox,
-  // DialogActions,
-  // DialogContent,
   FormControl,
   FormHelperText,
   FormControlLabel,
@@ -33,7 +29,6 @@ import book2 from "../assets/book2.png";
 import axios from "@/api/axios";
 import { Link as RouterLink, useNavigate } from "react-router";
 import useAuth from "@/hooks/useAuth";
-// import smile from "@/assets/smile.png";
 import { LoadingButton } from "@mui/lab";
 import { signUpSchema, type SignUpSchema } from "@/schema/signUpSchema";
 
@@ -41,7 +36,6 @@ function Signup() {
   const [open, setOpen] = useState(false);
   const [errMsg, setErrMsg] = useState("");
   const [severity, setSeverity] = useState<AlertColor | undefined>();
-  // const [openDialog, setOpenDialog] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { setAuth } = useAuth();
   const navigate = useNavigate();
@@ -69,19 +63,16 @@ function Signup() {
     setOpen(false);
   };
 
-  // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = e.target;
-  //   setFormdata((prevFormData) => ({ ...prevFormData, [name]: value }));
-  // };
-
   const onSubmit: SubmitHandler<SignUpSchema> = async (data) => {
     try {
       console.log({ data });
       const response = await axios.post("users/register", data);
       if (response.status === 201) {
-        const { id, email, fullName, accessToken } = response.data;
-        setAuth({ id, email, fullName, accessToken });
-        navigate("/dashboard");
+        const { id, email, fullName, accessToken, emailVerified } = response.data;
+        setAuth({ id, email, fullName, accessToken, emailVerified });
+        
+        localStorage.setItem("userId", id); // Save userId
+        navigate("/verify-email");
       }
       console.log(response);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,7 +82,7 @@ function Signup() {
       if (!err?.response) {
         setErrMsg("Server can not be reached, Please Try again later!");
       } else if (err.response?.status === 400) {
-        setErrMsg("Missing One of the Fields, Please fill All!");
+        setErrMsg(err.response?.data.message);
       } else if (err.response?.status === 409) {
         setErrMsg(err.response?.data.message);
       } else {
@@ -124,87 +115,10 @@ function Signup() {
           </Alert>
         </Snackbar>
 
-        {/* <Dialog
-          PaperProps={{
-            sx: {
-              borderRadius: 6,
-            },
-          }}
-          open={openDialog}
-          onClose={() => setOpenDialog(false)}
-        >
-          <DialogContent>
-            <Box
-              sx={{
-                fontsize: "30px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 2,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <img
-                  src={smile}
-                  alt="success smile image"
-                  width={50}
-                  height={50}
-                />
-              </Box>
-              <Typography
-                gutterBottom
-                sx={{
-                  color: "black",
-                  fontSize: "18px",
-                  fontWeight: 600,
-                  lineHeight: "21.78px",
-                }}
-              >
-                Congrats!
-              </Typography>
-              <Typography
-                sx={{
-                  color: "black",
-                  opacity: 0.5,
-                  fontSize: "12px",
-                  fontWeight: 400,
-                  lineHeight: "14.52px",
-                }}
-              >
-                You are registered successfully!Wait until we approve your
-                account.
-              </Typography>
-            </Box>
-          </DialogContent>
-          <DialogActions
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Button
-              sx={{ width: "100px", bgcolor: "primary.light", mb: 2 }}
-              autoFocus
-              onClick={() => setOpenDialog(false)}
-              variant="contained"
-            >
-              Ok
-            </Button>
-          </DialogActions>
-        </Dialog> */}
-
         <Box
           sx={{
             width: "50%",
-            display: "flex",
+            display: { xs: "none", md: "flex" },
             justifyContent: "center",
             alignItems: "center",
             bgcolor: "#171B36",
@@ -216,13 +130,15 @@ function Signup() {
           component="form"
           onSubmit={handleSubmit(onSubmit)}
           sx={{
-            width: "50%",
+            width: { xs: "100%", md: "50%" },
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
             gap: 2,
             bgcolor: "white",
-            p: 8,
+            px: {xs: 3, md: 8},
+            pb: {xs: 3, md: 8},
+            pt: {xs: 0, md: 8}
           }}
         >
           <Stack direction={"row"} spacing={2}>

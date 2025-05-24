@@ -9,13 +9,12 @@ router.get("/:bookId", bookController.handleGetBook);
 
 router.post(
   "/",
-  //  validateBook,
+   validateBook,
   bookController.handleNewBook
 );
 
 router.put(
   "/:bookId",
-  //  validateBook,
   bookController.handleUpdateBook
 );
 

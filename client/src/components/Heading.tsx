@@ -1,7 +1,8 @@
-import { Box, Typography } from "@mui/material";
 import { useLocation } from "react-router";
-import { OWNER_SIDE_BAR_LIST_ONE, OWNER_SIDE_BAR_LIST_TWO } from "@/constants";
+import { Box, Typography } from "@mui/material";
+
 import { HEADING_HEIGHT } from "@/constants/index";
+import { OWNER_SIDE_BAR_LIST_ONE, OWNER_SIDE_BAR_LIST_TWO } from "@/constants";
 
 type HeadingProps = {
   lists: typeof OWNER_SIDE_BAR_LIST_TWO & typeof OWNER_SIDE_BAR_LIST_ONE;

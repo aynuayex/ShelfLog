@@ -86,14 +86,14 @@ const handleLogin = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000,
     });
 
-    // //forbiden, but set access and refresh Token,so that we don't have to do it again in emailverification controller
-    // if (!foundUser.emailVerified) return res.status(403).json({
-    //   id: result._id,
-    //   fullName: result.fullName,
-    //   email,
-    //   accessToken,
-    //   emailVerified: result.emailVerified
-    // }); 
+    //forbiden, but set access and refresh Token,so that we don't have to do it again in emailverification controller
+    if (!foundUser.emailVerified) return res.status(403).json({
+      id: result._id,
+      fullName: result.fullName,
+      email,
+      accessToken,
+      emailVerified: result.emailVerified
+    }); 
 
     res.json({
       message: `Success, Logged in as ${result.fullName}!`,

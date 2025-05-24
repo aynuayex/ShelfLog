@@ -38,16 +38,21 @@ const handleNewBook = async (req, res) => {
     console.log(req.body);
     const { title, author, category } = req.body;
 
+    //check for duplicate books in the db with the same title
+    const duplicate = await Book.findOne({ title }).exec();
+    if (duplicate)
+      return res.status(409).json({
+        message:
+          "Book already exist with that information, Please change Title!",
+      }); //Conflict
+
     const result = await Book.create({
       userId: req.user.id,
       title,
       author,
       category,
     });
-    res.status(201).json({
-      success: `New Book with title ${result.title} created!`,
-      result,
-    });
+    res.status(201).json(result);
   } catch (err) {
     logger.error(err.message);
     res.status(500).json({ message: err.message });

@@ -1,5 +1,6 @@
 import { Outlet } from "react-router";
-import { Box } from "@mui/material";
+
+import { Box, useMediaQuery, useTheme } from "@mui/material";
 import {
   DRAWER_WIDTH,
   OWNER_SIDE_BAR_LIST_ONE,
@@ -9,12 +10,14 @@ import Heading from "@/components/Heading";
 import Sidebar from "@/components/Sidebar";
 
 function App() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   return (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
-        ml: `${DRAWER_WIDTH + 32}px`,
+        ml: isMobile ? "96px" : `${DRAWER_WIDTH + 32}px`,
         mr: 2,
         gap: 2,
       }}

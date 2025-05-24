@@ -101,7 +101,6 @@ const handleRefreshToken = async (req, res) => {
           id: result._id,
           email: result.email,
           fullName: result.fullName,
-          role: result.role,
           accessToken,
         });
       }

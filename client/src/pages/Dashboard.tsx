@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   MaterialReactTable,
   type MRT_ColumnDef,
   useMaterialReactTable,
 } from "material-react-table";
 import { format, parseISO } from "date-fns";
-import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import type { Book } from "@/types";
 import {
   Box,
@@ -19,113 +18,83 @@ import {
   TextField,
   type SelectChangeEvent,
 } from "@mui/material";
-import Toast from "@/components/Toast";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-
-const initialFormData = {
-    id: "",
-  title: "",
-  author: "",
-  category: "",
-  note: "",
-};
+import { Controller, useForm, type SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { bookSchema, type BookSchema } from "@/schema/bookSchema";
+import {
+  UseDeleteBook,
+  UseUpdateBook,
+  UseGetAllBooks,
+} from "@/api/ticket/Queries";
 
 const Dashboard = () => {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [formData, setFormdata] = useState(initialFormData);
+  const [bookId, setBookId] = useState("");
   const [openFormDialog, setOpenFormDialog] = useState(false);
-  //   const [openSuccessDialog, setOpenSuccessDialog] = useState(false);
 
-  const axiosPrivate = useAxiosPrivate();
+  const { data: books = [], refetch, isLoading, isError } = UseGetAllBooks();
+  const { mutate: deleteBook } = UseDeleteBook();
+  const { mutate: updateBook } = UseUpdateBook();
 
-  useEffect(() => {
-    let isMounted = true;
-    const controller = new AbortController();
-
-    const getBooks = async () => {
-      try {
-        const response = await axiosPrivate.get("/books", {
-          signal: controller.signal,
-        });
-        console.log(response.data);
-        if (isMounted) {
-          setBooks(response.data);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    getBooks();
-    return () => {
-      isMounted = false;
-      controller.abort();
-    };
-  }, [axiosPrivate]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormdata((prevFormData) => ({ ...prevFormData, [name]: value }));
-  };
+  const {
+    handleSubmit,
+    formState: { isSubmitting, errors },
+    control,
+    reset,
+  } = useForm<BookSchema>({
+    resolver: zodResolver(bookSchema),
+    defaultValues: {
+      title: "",
+      author: "",
+      category: "",
+      note: "",
+    },
+  });
 
   const handleBookStatusChange = useCallback(
-    async (event: SelectChangeEvent, id: string) => {
-      try {
-        const response = await axiosPrivate.put(`books/${id}`, {
-          status: event.target.value,
-        });
-        console.log({ response });
-        if (response.status === 200) {
-          // not working check it?
-          // <Toast
-          //   message={`book status changed successfully to ${event.target.value}`}
-          //   severity="success"
-          // />;
-          // refetch();
+    (event: SelectChangeEvent, id: string) => {
+      updateBook(
+        {
+          bookId: id,
+          payload: { status: event.target.value as Book["status"] },
+        },
+        {
+          onSuccess: () => {
+            refetch();
+          },
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
-        <Toast
-          message={`operation error ${err.response.data}`}
-          severity="error"
-        />;
-      }
-      // setStatus(event.target.value as string);
+      );
     },
-    [axiosPrivate]
+    [updateBook, refetch]
   );
 
   const readyForm = (id: string) => {
     setOpenFormDialog(true);
     const book = books.find((book) => book._id === id) as Book;
-    setFormdata({ id: book._id, title: book.title, author: book.author, category: book.category, note: book.note ?? "" });
+    setBookId(book._id);
+    reset({
+      title: book.title,
+      author: book.author,
+      category: book.category,
+      note: book.note ?? "",
+    });
   };
 
-  const handleBookChange = async () => {
-    try {
-      const response = await axiosPrivate.put(`books/${formData.id}`, {
-        ...formData
-      });
-      if(response.status == 200 ) {
-        setOpenFormDialog(false);
-        // refetch the new Data
+  const handleBookChange: SubmitHandler<BookSchema> = (data) => {
+    updateBook(
+      { bookId, payload: data },
+      {
+        onSuccess: () => {
+          setOpenFormDialog(false);
+          refetch();
+        },
       }
-      console.log(response);
-    } catch (err) {
-      console.error(err);
-    }
+    );
   };
 
-  const handleDeleteBook = async (id: string) => {
-    try {
-      const response = await axiosPrivate.delete(`books/${id}`);
-      console.log(response.data);
-      // refetch here to get updated data
-      // refetch()
-      // setBooks(response.data.allOwners);
-    } catch (err) {
-      console.error(err);
-    }
+  const handleDeleteBook = (id: string) => {
+    deleteBook(id, { onSuccess: () => refetch() });
   };
 
   const columns = useMemo<MRT_ColumnDef<Book>[]>(
@@ -208,8 +177,7 @@ const Dashboard = () => {
     positionActionsColumn: "last",
     enableRowActions: true,
     renderRowActions: ({ row }) => (
-      <Box
-      >
+      <Box>
         <IconButton
           aria-label="Edit Book"
           onClick={() => readyForm(row.original._id)}
@@ -225,74 +193,126 @@ const Dashboard = () => {
       </Box>
     ),
     state: {
-      //   isLoading,
+      isLoading,
     },
-    // muiToolbarAlertBannerProps: isError
-    //   ? {
-    //       color: 'error',
-    //       children: 'Error loading data',
-    //     }
-    //   : undefined,
-    // ...props,
+    muiToolbarAlertBannerProps: isError
+      ? {
+          color: "error",
+          children: "Error loading data",
+        }
+      : undefined,
   });
   return (
     <>
       <Dialog
+        component={"form"}
+        onSubmit={handleSubmit(handleBookChange)}
         open={openFormDialog}
         onClose={() => setOpenFormDialog(false)}
         aria-labelledby="dialog-title"
       >
-        <DialogContent>
-          <TextField
-            autoFocus
-            required
-            margin="dense"
+        <DialogContent
+          sx={{
+            width: { xs: "80vw", sm: "100vw" },
+            maxWidth: 600,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 3,
+            p: { xs: 2, sm: 4 },
+            boxSizing: "border-box",
+          }}
+        >
+          <Controller
             name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            label="Book Name"
-            fullWidth
-            variant="filled"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                autoFocus
+                {...field}
+                required
+                sx={{ width: {xs: 5/6, sm: 3/4 }}}
+                label="Book Name"
+                variant="filled"
+                disabled={isSubmitting}
+                error={!!errors.title}
+                helperText={errors.title?.message}
+              />
+            )}
           />
-          <TextField
-            required
-            margin="dense"
+
+          <Controller
             name="author"
-            value={formData.author}
-            onChange={handleInputChange}
-            label="Author Name"
-            fullWidth
-            variant="filled"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                required
+                sx={{ width: {xs: 5/6, sm: 3/4 }}}
+                label="Author Name"
+                variant="filled"
+                disabled={isSubmitting}
+                error={!!errors.author}
+                helperText={errors.author?.message}
+              />
+            )}
           />
-          <TextField
-            required
-            margin="dense"
+
+          <Controller
             name="category"
-            value={formData.category}
-            onChange={handleInputChange}
-            label="category"
-            fullWidth
-            variant="filled"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                required
+                sx={{ width: {xs: 5/6, sm: 3/4 }}}
+                label="Category"
+                variant="filled"
+                disabled={isSubmitting}
+                error={!!errors.category}
+                helperText={errors.category?.message}
+              />
+            )}
           />
-          <TextField
-            margin="dense"
+
+          <Controller
             name="note"
-            value={formData.note}
-            onChange={handleInputChange}
-            label="Note"
-            fullWidth
-            variant="filled"
-            multiline
-            minRows={3}
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                required
+                multiline
+                minRows={5}
+                sx={{ width: {xs: 5/6, sm: 3/4 }}}
+                label="Note"
+                variant="filled"
+                disabled={isSubmitting}
+                error={!!errors.category}
+                helperText={errors.category?.message}
+              />
+            )}
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <Button
+            type="submit"
             variant="contained"
             fullWidth
             autoFocus
-            sx={{ textTransform: "none", m: 2, bgcolor: "primary.light" }}
-            onClick={handleBookChange}
+            sx={{
+              width: 1 / 2,
+              textTransform: "none",
+              m: 2,
+              bgcolor: "primary.light",
+            }}
           >
             Update Book
           </Button>
