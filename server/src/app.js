@@ -1,4 +1,5 @@
 const cors = require("cors");
+const helmet = require("helmet");
 const express = require("express");
 const cookieParser = require("cookie-parser");
 
@@ -13,8 +14,8 @@ const app = express();
 
 // Middlewares
 
-// // Help secure Express apps by setting HTTP response headers.
-// app.use(helmet());
+// Help secure Express apps by setting HTTP response headers.
+app.use(helmet());
 
 // Handle options credentials check - before CORS!
 // and fetch cookies credentials requirement
